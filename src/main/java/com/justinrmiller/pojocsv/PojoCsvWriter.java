@@ -3,13 +3,14 @@ package com.justinrmiller.pojocsv;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.*;
 
 public class PojoCsvWriter<T> {
     private final static String DEFAULT_SEPARATOR = ",";
     private final static String DEFAULT_LINE_BREAK = "\n";
 
-    private final Field [] fields;
+    private final ArrayList<Field> fields;
     private final String separator;
     private final String lineBreak;
     private final Set<String> renderOnly;
@@ -27,7 +28,6 @@ public class PojoCsvWriter<T> {
         if (separator == null) throw new IllegalArgumentException();
         if (lineBreak == null) throw new IllegalArgumentException();
 
-        this.fields = inputClass.getDeclaredFields();
         this.separator = separator;
         this.lineBreak = lineBreak;
         this.renderOnly = renderOnly;
@@ -42,10 +42,17 @@ public class PojoCsvWriter<T> {
         types.add(Float.class);
         types.add(Double.class);
         types.add(String.class);
+        types.add(BigDecimal.class);
 
-        for (Field field : fields) {
+        this.fields = new ArrayList<>();
+
+        for (Field field : inputClass.getDeclaredFields()) {
             if (!types.contains(field.getType())) {
                 throw new RuntimeException("The following field is not supported: " + field.getName());
+            }
+
+            if (renderOnly == null || renderOnly.contains(field.getName())) {
+                fields.add(field);
             }
         }
     }
@@ -60,25 +67,12 @@ public class PojoCsvWriter<T> {
         if (writer == null) throw new IllegalArgumentException();
         if (overrides == null) throw new IllegalArgumentException();
 
-        if (renderOnly != null) {
-            for (int i = 0; i < fields.length; ++i) {
-                fields[i].setAccessible(true);
-                if (renderOnly.contains(fields[i].getName())) {
-                    final String headerLabel = overrides.getOrDefault(fields[i].getName(), fields[i].getName());
-                    writer.write(headerLabel);
-                    if (i < fields.length - 1) {
-                        writer.write(separator);
-                    }
-                }
-            }
-        } else {
-            for (int i = 0; i < fields.length; ++i) {
-                fields[i].setAccessible(true);
-                final String headerLabel = overrides.getOrDefault(fields[i].getName(), fields[i].getName());
-                writer.write(headerLabel);
-                if (i < fields.length - 1) {
-                    writer.write(separator);
-                }
+        for (int i = 0; i < fields.size(); ++i) {
+            fields.get(i).setAccessible(true);
+            final String headerLabel = overrides.getOrDefault(fields.get(i).getName(), fields.get(i).getName());
+            writer.write(headerLabel);
+            if (i < fields.size() - 1) {
+                writer.write(separator);
             }
         }
 
@@ -89,22 +83,10 @@ public class PojoCsvWriter<T> {
         if (writer == null) throw new IllegalArgumentException();
         if (input == null) throw new IllegalArgumentException();
 
-        if (renderOnly != null) {
-            for (int i = 0; i < fields.length; ++i) {
-                fields[i].setAccessible(true);
-                    if (renderOnly.contains(fields[i].getName())) {
-                    writer.write(fields[i].get(input) == null ? "null" : fields[i].get(input).toString());
-                    if (i < fields.length - 1) {
-                        writer.write(separator);
-                    }
-                }
-            }
-        } else {
-            for (int i = 0; i < fields.length; ++i) {
-                writer.write(fields[i].get(input) == null ? "null" : fields[i].get(input).toString());
-                if (i < fields.length - 1) {
-                    writer.write(separator);
-                }
+        for (int i = 0; i < fields.size(); ++i) {
+            writer.write(fields.get(i).get(input) == null ? "null" : fields.get(i).get(input).toString());
+            if (i < fields.size() - 1) {
+                writer.write(separator);
             }
         }
 
