@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class Main {
     public static void main(String [] args) throws IllegalAccessException, IOException {
@@ -21,13 +23,14 @@ public class Main {
         nameResolver.put("age", "Age");
         nameResolver.put("score", "Score");
 
-        PojoCsvWriter<User> csvWriter = new PojoCsvWriter<>(User.class);
+        Set<String> renderOnly = new HashSet<>();
+        renderOnly.add("age");
 
+        PojoCsvWriter<User> csvWriter = new PojoCsvWriter<>(User.class, null);
 
         PrintStream out = System.out;
         PrintWriter pw = new PrintWriter(out);
         csvWriter.writeHeader(pw);
-        csvWriter.writeHeader(pw, nameResolver);
         csvWriter.writeLine(pw, user1);
         csvWriter.writeLine(pw, user2);
         csvWriter.writeLine(pw, user3);
