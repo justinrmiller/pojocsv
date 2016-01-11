@@ -69,7 +69,7 @@ public class PojoCsvWriter<T> {
 
         for (int i = 0; i < fields.size(); ++i) {
             fields.get(i).setAccessible(true);
-            final String headerLabel = overrides.getOrDefault(fields.get(i).getName(), fields.get(i).getName());
+            final String headerLabel = overrides.get(fields.get(i).getName());
             writer.write(headerLabel);
             if (i < fields.size() - 1) {
                 writer.write(separator);
