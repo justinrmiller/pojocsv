@@ -60,7 +60,7 @@ public class PojoCsvWriter<T> {
     public void writeHeader(Writer writer) throws IOException {
         if (writer == null) throw new IllegalArgumentException();
 
-        writeHeader(writer, new HashMap<>());
+        writeHeader(writer, new HashMap<String, String>());
     }
 
     public void writeHeader(Writer writer, Map<String, String> overrides) throws IOException {
